@@ -1,233 +1,183 @@
-# Revnet x402 Facilitator Proof of Concept
+# x402 → Revnet Facilitator Example
 
-A standalone implementation of an x402 facilitator service for Revnet that handles payment verification and settlement for the x402 payment protocol. This proof of concept demonstrates how to build a facilitator service that can be deployed to platforms like Vercel and integrated with Revnet's payment infrastructure.
+A custom x402 facilitator implementation that demonstrates **Pattern A (Two-step)** integration with Juicebox Revnet. This example shows how to build a facilitator that handles x402 payments and automatically forwards them to Revnet's `JBMultiTerminal.pay()` function.
 
-## Overview
+## 🎯 **Purpose & Constraints**
 
-The facilitator provides three main endpoints:
+This is a **proof-of-concept example** with the following hardcoded constraints:
 
-- `/verify`: Verifies x402 payment payloads
-- `/settle`: Settles x402 payments by signing and broadcasting transactions
-- `/supported`: Returns the payment kinds that are supported by the facilitator
+- **Network**: Base Mainnet only
+- **Revnet Project**: Project ID `127` (hardcoded)
+- **Terminal**: `JBMultiTerminal` at `0xdb9644369c79c3633cde70d2df50d827d7dc7dbc` (hardcoded)
+- **Token**: USDC only (`0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`)
+- **Payment Flow**: Two-step settlement (EIP-3009 → Revnet)
 
-This Revnet proof of concept demonstrates how to:
+## 🏗️ **Architecture: Two-Step Settlement**
 
-1. Set up a basic Express server to handle x402 payment verification and settlement
-2. Integrate with the x402 protocol's verification and settlement functions
-3. Handle payment payload validation and error cases
-4. Deploy to Vercel or other serverless platforms
-5. Integrate with Revnet's payment infrastructure and workflows
+This facilitator implements **Pattern A** from the x402 → Revnet integration spec:
 
-## Revnet Integration
+### **Step 1: EIP-3009 Transfer**
 
-This facilitator is designed to work with Revnet's payment infrastructure:
-
-- **Payment Verification**: Verifies x402 payment signatures for Revnet transactions
-- **Settlement**: Handles on-chain settlement of verified payments
-- **Multi-chain Support**: Supports Base, Ethereum, and Solana networks
-- **API Integration**: Provides RESTful endpoints for Revnet services to interact with
-
-## Prerequisites
-
-- Node.js v20+ (install via [nvm](https://github.com/nvm-sh/nvm))
-- npm or pnpm package manager
-- A valid Ethereum private key and/or Solana private key
-- Base Sepolia testnet ETH and/or Solana Devnet SOL for transaction fees
-
-## Setup
-
-1. Clone this repository:
-
-```bash
-git clone <repository-url>
-cd x402-facilitator-example
+```
+Buyer → [transferWithAuthorization] → Facilitator Escrow
 ```
 
-2. Install dependencies:
+- Buyer signs EIP-3009 `transferWithAuthorization`
+- USDC is transferred to facilitator's escrow account
+- Standard x402 verification and settlement
 
-```bash
-npm install
-# or
-pnpm install
+### **Step 2: Revnet Payment**
+
+```
+Facilitator Escrow → [approve + pay] → Revnet Project 127
 ```
 
-3. Create a `.env` file with the following variables:
+- Escrow approves `JBMultiTerminal` to spend USDC
+- Escrow calls `JBMultiTerminal.pay()` with exact amount
+- Buyer receives Revnet tokens as beneficiary
 
-```env
-EVM_PRIVATE_KEY=0xYourPrivateKey
-SVM_PRIVATE_KEY=solanaprivatekey
-PORT=3000
+## 🚀 **Quick Start**
+
+1. **Install dependencies:**
+
+   ```bash
+   npm install
+   ```
+
+2. **Set up environment:**
+
+   ```bash
+   cp env.example .env
+   # Edit .env with your EVM_PRIVATE_KEY
+   ```
+
+3. **Start all services:**
+
+   ```bash
+   ./start-all.sh
+   ```
+
+4. **Test the flow:**
+   - Open http://localhost:8000
+   - Click any provider endpoint button
+   - Follow the x402 payment flow
+   - Watch facilitator logs for Revnet integration
+
+## 📋 **Service Architecture**
+
+```
+┌─────────────────┐    ┌─────────────────┐    ┌─────────────────┐
+│   Web Client    │    │   Provider      │    │   Facilitator   │
+│   (Port 8000)   │───▶│   (Port 3001)   │───▶│   (Port 3000)   │
+│                 │    │                 │    │                 │
+│ • Test UI       │    │ • Protected     │    │ • x402 Verify   │
+│ • Endpoint      │    │   Endpoints     │    │ • x402 Settle   │
+│   Buttons       │    │ • Revnet Headers│    │ • Revnet Pay    │
+└─────────────────┘    └─────────────────┘    └─────────────────┘
 ```
 
-4. Start the development server:
+## 🔧 **Key Components**
 
-```bash
-npm run dev
-# or
-pnpm dev
-```
+### **Facilitator (`index.ts`)**
 
-The server will start on http://localhost:3000
+- **Custom Settle Function**: Wraps x402's `settle()` to add Revnet logic
+- **ERC-20 Approval**: Approves `JBMultiTerminal` before payment
+- **Gas Management**: Dynamic gas pricing to prevent transaction failures
+- **Nonce Management**: Sequential transaction handling
+- **Timeout Handling**: Prevents hanging on transaction receipts
 
-## API Endpoints
+### **Provider (`examples/servers/express-basic/index.ts`)**
 
-### GET /
+- **Protected Endpoints**: `/weather`, `/premium/*`, `/api/data`
+- **Revnet Headers**: Passes project parameters via `X-Revnet-*` headers
+- **Dynamic Beneficiary**: Uses buyer's EOA as Revnet beneficiary
 
-Returns basic information about the facilitator service.
+### **Web Client (`public/index.html`)**
 
-### GET /health
+- **Launch Pad**: Simple UI for testing provider endpoints
+- **Direct Redirects**: Bypasses complex wallet integration
+- **Payment Flow**: Triggers x402 → Revnet integration
 
-Health check endpoint that returns the service status.
+## 🔄 **Payment Flow Details**
 
-### GET /supported
+1. **Client Request**: User clicks provider endpoint button
+2. **Provider Response**: Returns x402 payment requirements + Revnet headers
+3. **Client Payment**: User signs EIP-3009 `transferWithAuthorization`
+4. **Facilitator Verify**: Validates payment signature and requirements
+5. **Facilitator Settle**:
+   - Calls x402's `settle()` (EIP-3009 transfer to escrow)
+   - Approves `JBMultiTerminal` to spend USDC
+   - Calls `JBMultiTerminal.pay()` with exact amount
+   - Buyer receives Revnet tokens
 
-Returns information about the payment kinds that the facilitator supports.
+## 🛠️ **Technical Implementation**
 
-Sample Response:
-
-```json
-{
-  "kinds": [
-    {
-      "x402Version": 1,
-      "scheme": "exact",
-      "network": "base-sepolia"
-    },
-    {
-      "x402Version": 1,
-      "scheme": "exact",
-      "network": "solana-devnet",
-      "extra": {
-        "feePayer": "SolanaAddress"
-      }
-    }
-  ]
-}
-```
-
-### GET /verify
-
-Returns information about the verify endpoint.
-
-### POST /verify
-
-Verifies an x402 payment payload.
-
-Request body:
+### **Custom Settle Function**
 
 ```typescript
-{
-  paymentPayload: PaymentPayload;
-  paymentRequirements: PaymentRequirements;
+async function settle(signer, paymentPayload, paymentRequirements) {
+  // Step 1: Standard x402 settlement
+  const settlementResult = await originalSettle(signer, paymentPayload, paymentRequirements);
+
+  // Step 2: Revnet integration
+  if (settlementResult.success) {
+    // Approve JBMultiTerminal
+    await walletClient.writeContract({
+      address: USDC_CONTRACT,
+      abi: ERC20_ABI,
+      functionName: "approve",
+      args: [JB_MULTI_TERMINAL_ADDRESS, amount],
+    });
+
+    // Pay into Revnet
+    await walletClient.writeContract({
+      address: JB_MULTI_TERMINAL_ADDRESS,
+      abi: JB_MULTI_TERMINAL_ABI,
+      functionName: "pay",
+      args: [projectId, token, amount, beneficiary, minReturnedTokens, memo, metadata],
+    });
+  }
+
+  return settlementResult;
 }
 ```
 
-### GET /settle
+### **Revnet Parameters**
 
-Returns information about the settle endpoint.
+- **Project ID**: `127` (hardcoded)
+- **Beneficiary**: Buyer's EOA (dynamic)
+- **Memo**: `"x402-payment"` (add your own for enhanced verification use cases)
+- **Min Returned Tokens**: `0`
+- **Metadata**: `0x`
 
-### POST /settle
+## 📚 **Based on x402 Protocol**
 
-Settles an x402 payment by signing and broadcasting the transaction.
+This example is built on top of the [x402 protocol](https://github.com/coinbase/x402) and uses:
 
-Request body:
+- **x402/facilitator**: Core verification and settlement functions
+- **x402-express**: Express.js middleware for payment protection
+- **EIP-3009**: Standard for transfer with authorization
+- **EIP-712**: Typed data signing
 
-```typescript
-{
-  paymentPayload: PaymentPayload;
-  paymentRequirements: PaymentRequirements;
-}
-```
+## ⚠️ **Important Notes**
 
-## Deployment
+- **Educational Purpose**: This is a proof-of-concept, not production-ready
+- **Hardcoded Values**: Network, project ID, and terminal are fixed
+- **USDC Only**: Only supports USDC payments
+- **Base Mainnet**: Configured for Base network only
+- **Security**: Private keys are stored in environment variables
 
-### Vercel Deployment
+## 🔗 **Related Resources**
 
-1. Install Vercel CLI:
+- [x402 Protocol Repository](https://github.com/coinbase/x402)
+- [Juicebox Protocol](https://juicebox.money)
+- [Revnet Documentation](https://revnet.juicebox.money)
+- [EIP-3009 Standard](https://eips.ethereum.org/EIPS/eip-3009)
 
-```bash
-npm i -g vercel
-```
-
-2. Build the project:
-
-```bash
-npm run build
-```
-
-3. Deploy to Vercel:
-
-```bash
-vercel
-```
-
-4. Set environment variables in Vercel dashboard:
-   - `EVM_PRIVATE_KEY`
-   - `SVM_PRIVATE_KEY`
-
-### Other Platforms
-
-This application can be deployed to any Node.js hosting platform that supports:
-
-- Node.js 20+
-- Environment variables
-- Express.js applications
-
-## Environment Variables
-
-| Variable          | Description                           | Required              |
-| ----------------- | ------------------------------------- | --------------------- |
-| `EVM_PRIVATE_KEY` | Ethereum private key for EVM networks | No\*                  |
-| `SVM_PRIVATE_KEY` | Solana private key for SVM networks   | No\*                  |
-| `PORT`            | Port number for the server            | No (defaults to 3000) |
-
-\*At least one private key is required for the facilitator to function.
-
-## Development
-
-### Scripts
-
-- `npm run dev` - Start development server with hot reload
-- `npm run build` - Build the TypeScript code
-- `npm start` - Start the production server
-- `npm run lint` - Run ESLint
-- `npm run format` - Format code with Prettier
-
-### Code Style
-
-This project uses:
-
-- ESLint for code linting
-- Prettier for code formatting
-- TypeScript for type safety
-
-## Learning Resources
-
-This example is designed to help you understand how x402 facilitators work. For more information about the x402 protocol and its implementation, visit:
-
-- [x402 Protocol Documentation](https://x402.org)
-- [Coinbase Developer Platform](https://www.coinbase.com/developer-platform)
-- [Original x402 Repository](https://github.com/coinbase/x402)
-
-## Production Considerations
-
-For production use, we recommend using:
-
-- Testnet: https://x402.org/facilitator
-- Production: https://api.cdp.coinbase.com/platform/v2/x402
-
-This example is for educational purposes and should not be used in production without proper security considerations, including:
-
-- Secure key management
-- Rate limiting
-- Input validation
-- Error handling
-- Monitoring and logging
-
-## License
+## 📄 **License**
 
 Apache-2.0
 
-## Contributing
+---
 
-This is an example repository. For contributions to the main x402 protocol, please visit the [main repository](https://github.com/coinbase/x402).
+**Note**: This example demonstrates the integration pattern but should not be used in production without proper security considerations, key management, and error handling.
