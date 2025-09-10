@@ -76,7 +76,7 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 start_service "Facilitator Server" "$SCRIPT_DIR" 3000 "npm run dev"
 
 # Start Provider Server (port 3001)
-start_service "Provider Server" "$SCRIPT_DIR/examples/servers/express-basic" 3001 "FACILITATOR_URL=http://localhost:3000 ADDRESS=0xf824C59C3DE016C66E333C7c70d8e804852BF71D NETWORK=base npm run dev"
+start_service "Provider Server" "$SCRIPT_DIR/examples/servers/express-basic" 3001 "FACILITATOR_URL=http://localhost:3000 ADDRESS=0xAbEa4e7a139FAdBDb2B76179C24f0ff76753C800 NETWORK=base npm run dev"
 
 # Start Web Client (port 8000)
 echo ""
