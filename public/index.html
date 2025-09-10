@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>x402 Protocol Test Client</title>
+    <title>x402 Revnet Facilitator Example</title>
     <style>
       :root {
         --primary-color: #0052ff;
@@ -323,12 +323,24 @@
         font-weight: 700;
         color: var(--primary-color);
         margin: 0;
+        transition: all 0.5s ease-in-out;
       }
 
       .amount-label {
         font-size: 1rem;
         color: var(--text-secondary);
         margin: 0.5rem 0 0 0;
+        transition: all 0.5s ease-in-out;
+      }
+
+      .amount-display.fade-out {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      .amount-label.fade-out {
+        opacity: 0;
+        transform: translateY(-10px);
       }
 
       .wallet-section {
@@ -478,15 +490,15 @@
       <!-- Payment Flow Section -->
       <div class="payment-flow">
         <div class="payment-header">
-          <h1 class="payment-title">x402 Protocol Test Client</h1>
+          <h1 class="payment-title">x402 Protocol Revnet Facilitator</h1>
           <p class="payment-subtitle">
             Test client for calling x402-protected APIs and verifying payments
           </p>
         </div>
 
         <div class="payment-amount">
-          <div class="amount-display">$0.01</div>
-          <div class="amount-label">USDC on Base Network</div>
+          <div class="amount-display" id="amountDisplay">$0.01</div>
+          <div class="amount-label" id="amountLabel">USDC on Base Network</div>
         </div>
 
         <div class="flow-steps">
@@ -635,11 +647,59 @@
       let wallet = null;
       let currentAccount = null;
 
+      // Payment rotation configuration
+      const paymentConfigs = [
+        { amount: "1.00 ETH", label: "ETH on Main Network" },
+        { amount: "$1.00 DIA", label: "DIA on Optimism" },
+        { amount: "$1 USDT", label: "USDT on Arbitrum" },
+        { amount: "$1 USDC", label: "USDC on Base Network" },
+      ];
+
+      let currentPaymentIndex = 0;
+      let paymentRotationInterval = null;
+
       // Initialize the page
       document.addEventListener("DOMContentLoaded", function () {
         checkWalletConnection();
         testConnection();
+        startPaymentRotation();
       });
+
+      // Start payment rotation
+      function startPaymentRotation() {
+        const amountDisplay = document.getElementById("amountDisplay");
+        const amountLabel = document.getElementById("amountLabel");
+
+        if (!amountDisplay || !amountLabel) return;
+
+        // Rotate every 3 seconds
+        paymentRotationInterval = setInterval(() => {
+          // Fade out current content
+          amountDisplay.classList.add("fade-out");
+          amountLabel.classList.add("fade-out");
+
+          // After fade out completes, update content and fade in
+          setTimeout(() => {
+            currentPaymentIndex = (currentPaymentIndex + 1) % paymentConfigs.length;
+            const config = paymentConfigs[currentPaymentIndex];
+
+            amountDisplay.textContent = config.amount;
+            amountLabel.textContent = config.label;
+
+            // Remove fade-out class to trigger fade-in
+            amountDisplay.classList.remove("fade-out");
+            amountLabel.classList.remove("fade-out");
+          }, 500); // Wait for fade-out to complete
+        }, 3000);
+      }
+
+      // Stop payment rotation
+      function stopPaymentRotation() {
+        if (paymentRotationInterval) {
+          clearInterval(paymentRotationInterval);
+          paymentRotationInterval = null;
+        }
+      }
 
       // Check if wallet is already connected
       async function checkWalletConnection() {

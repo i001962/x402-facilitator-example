@@ -32,6 +32,12 @@ if (!EVM_PRIVATE_KEY) {
 }
 
 // Custom function to create a connected client with Alchemy RPC
+/**
+ * Creates a connected client for the specified network using Alchemy RPC
+ *
+ * @param network - The blockchain network to connect to
+ * @returns A connected client for the specified network
+ */
 function createConnectedClientWithRPC(network: string): ConnectedClient {
   if (network === "base") {
     return createPublicClient({

@@ -168,19 +168,20 @@ vercel
 ### Other Platforms
 
 This application can be deployed to any Node.js hosting platform that supports:
+
 - Node.js 20+
 - Environment variables
 - Express.js applications
 
 ## Environment Variables
 
-| Variable | Description | Required |
-|----------|-------------|----------|
-| `EVM_PRIVATE_KEY` | Ethereum private key for EVM networks | No* |
-| `SVM_PRIVATE_KEY` | Solana private key for SVM networks | No* |
-| `PORT` | Port number for the server | No (defaults to 3000) |
+| Variable          | Description                           | Required              |
+| ----------------- | ------------------------------------- | --------------------- |
+| `EVM_PRIVATE_KEY` | Ethereum private key for EVM networks | No\*                  |
+| `SVM_PRIVATE_KEY` | Solana private key for SVM networks   | No\*                  |
+| `PORT`            | Port number for the server            | No (defaults to 3000) |
 
-*At least one private key is required for the facilitator to function.
+\*At least one private key is required for the facilitator to function.
 
 ## Development
 
@@ -195,6 +196,7 @@ This application can be deployed to any Node.js hosting platform that supports:
 ### Code Style
 
 This project uses:
+
 - ESLint for code linting
 - Prettier for code formatting
 - TypeScript for type safety
