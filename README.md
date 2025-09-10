@@ -1,6 +1,6 @@
-# x402 Facilitator Example
+# Revnet x402 Facilitator Proof of Concept
 
-A standalone implementation of an x402 facilitator service that handles payment verification and settlement for the x402 payment protocol. This implementation is designed for learning purposes and demonstrates how to build a facilitator service that can be deployed to platforms like Vercel.
+A standalone implementation of an x402 facilitator service for Revnet that handles payment verification and settlement for the x402 payment protocol. This proof of concept demonstrates how to build a facilitator service that can be deployed to platforms like Vercel and integrated with Revnet's payment infrastructure.
 
 ## Overview
 
@@ -10,12 +10,22 @@ The facilitator provides three main endpoints:
 - `/settle`: Settles x402 payments by signing and broadcasting transactions
 - `/supported`: Returns the payment kinds that are supported by the facilitator
 
-This example demonstrates how to:
+This Revnet proof of concept demonstrates how to:
 
 1. Set up a basic Express server to handle x402 payment verification and settlement
 2. Integrate with the x402 protocol's verification and settlement functions
 3. Handle payment payload validation and error cases
 4. Deploy to Vercel or other serverless platforms
+5. Integrate with Revnet's payment infrastructure and workflows
+
+## Revnet Integration
+
+This facilitator is designed to work with Revnet's payment infrastructure:
+
+- **Payment Verification**: Verifies x402 payment signatures for Revnet transactions
+- **Settlement**: Handles on-chain settlement of verified payments
+- **Multi-chain Support**: Supports Base, Ethereum, and Solana networks
+- **API Integration**: Provides RESTful endpoints for Revnet services to interact with
 
 ## Prerequisites
 
