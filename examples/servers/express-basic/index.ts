@@ -1,13 +1,13 @@
 import { config } from "dotenv";
 import express from "express";
 import cors from "cors";
-import { paymentMiddleware, Resource, type SolanaAddress } from "x402-express";
+import { paymentMiddleware, Resource, type SolanaAddress, type Network } from "x402-express";
 
 config();
 
 const facilitatorUrl = process.env.FACILITATOR_URL as Resource;
 const payTo = process.env.ADDRESS as `0x${string}` | SolanaAddress;
-const network = process.env.NETWORK || "base-sepolia";
+const network = (process.env.NETWORK || "base-sepolia") as Network;
 
 if (!facilitatorUrl || !payTo) {
   console.error("Missing required environment variables: FACILITATOR_URL, ADDRESS");
@@ -31,16 +31,13 @@ app.use(
     {
       // Simple weather API with fixed price
       "GET /weather": {
-        price: "$0.001",
-        network,
-        description: "Current weather data",
-      },
-      // Premium content with custom token pricing
-      "/premium/*": {
         price: {
-          amount: "1000000", // 1 USDC (6 decimals)
+          amount: "1000", // 0.001 USDC (6 decimals)
           asset: {
-            address: "0x036CbD53842c5426634e7929541eC2318f3dCF7e", // USDC on Base Sepolia
+            address:
+              network === "base"
+                ? "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" // USDC on Base Mainnet
+                : "0x036CbD53842c5426634e7929541eC2318f3dCF7e", // USDC on Base Sepolia
             decimals: 6,
             eip712: {
               name: "USD Coin",
@@ -49,13 +46,51 @@ app.use(
           },
         },
         network,
-        description: "Premium content access",
+        config: {
+          description: "Current weather data",
+        },
+      },
+      // Premium content with custom token pricing
+      "/premium/*": {
+        price: {
+          amount: "1000000", // 1 USDC (6 decimals)
+          asset: {
+            address:
+              network === "base"
+                ? "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" // USDC on Base Mainnet
+                : "0x036CbD53842c5426634e7929541eC2318f3dCF7e", // USDC on Base Sepolia
+            decimals: 6,
+            eip712: {
+              name: "USD Coin",
+              version: "2",
+            },
+          },
+        },
+        network,
+        config: {
+          description: "Premium content access",
+        },
       },
       // API endpoint with different pricing
       "POST /api/data": {
-        price: "$0.005",
+        price: {
+          amount: "5000", // 0.005 USDC (6 decimals)
+          asset: {
+            address:
+              network === "base"
+                ? "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" // USDC on Base Mainnet
+                : "0x036CbD53842c5426634e7929541eC2318f3dCF7e", // USDC on Base Sepolia
+            decimals: 6,
+            eip712: {
+              name: "USD Coin",
+              version: "2",
+            },
+          },
+        },
         network,
-        description: "Data processing service",
+        config: {
+          description: "Data processing service",
+        },
       },
     },
     {
@@ -91,6 +126,26 @@ app.get("/premium/analytics", (req, res) => {
       growth: "+15%",
     },
     reportDate: new Date().toISOString(),
+  });
+});
+
+app.get("/premium/data", (req, res) => {
+  res.json({
+    data: {
+      insights: "Premium data insights",
+      metrics: {
+        performance: "98.5%",
+        uptime: "99.9%",
+        satisfaction: "4.8/5",
+      },
+      recommendations: [
+        "Optimize database queries",
+        "Implement caching layer",
+        "Scale horizontally",
+      ],
+    },
+    timestamp: new Date().toISOString(),
+    accessLevel: "premium",
   });
 });
 

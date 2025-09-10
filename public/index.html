@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>x402 Revnet Facilitator Example</title>
+    <title>x402 Facilitator Example</title>
     <style>
       :root {
         --primary-color: #0052ff;
@@ -58,29 +58,9 @@
       }
 
       .logo {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
         font-size: 1.5rem;
         font-weight: 700;
         color: var(--primary-color);
-      }
-
-      .status-badge {
-        padding: 0.25rem 0.75rem;
-        border-radius: 9999px;
-        font-size: 0.875rem;
-        font-weight: 500;
-      }
-
-      .status-connected {
-        background: #dcfce7;
-        color: #166534;
-      }
-
-      .status-disconnected {
-        background: #fee2e2;
-        color: #991b1b;
       }
 
       .main-container {
@@ -91,7 +71,7 @@
 
       .grid {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
         gap: 2rem;
         margin-bottom: 2rem;
       }
@@ -104,9 +84,8 @@
 
       .card {
         background: var(--surface);
-        border-radius: 1rem;
+        border-radius: 0.75rem;
         padding: 1.5rem;
-        box-shadow: var(--shadow);
         border: 1px solid var(--border);
         transition: all 0.2s ease;
       }
@@ -119,16 +98,15 @@
       .card-header {
         display: flex;
         align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 1.5rem;
+        gap: 1rem;
         padding-bottom: 1rem;
         border-bottom: 1px solid var(--border);
       }
 
       .card-icon {
-        width: 2.5rem;
-        height: 2.5rem;
-        border-radius: 0.75rem;
+        width: 3rem;
+        height: 3rem;
+        border-radius: 0.5rem;
         display: flex;
         align-items: center;
         justify-content: center;
@@ -176,10 +154,9 @@
       }
 
       .form-input,
-      .form-select,
-      .form-textarea {
+      .form-select {
         width: 100%;
-        padding: 0.75rem 1rem;
+        padding: 0.75rem;
         border: 1px solid var(--border);
         border-radius: 0.5rem;
         font-size: 0.875rem;
@@ -188,17 +165,10 @@
       }
 
       .form-input:focus,
-      .form-select:focus,
-      .form-textarea:focus {
+      .form-select:focus {
         outline: none;
         border-color: var(--primary-color);
         box-shadow: 0 0 0 3px rgba(0, 82, 255, 0.1);
-      }
-
-      .form-textarea {
-        resize: vertical;
-        min-height: 120px;
-        font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
       }
 
       .btn {
@@ -269,13 +239,13 @@
       }
 
       .result-success {
-        background: #dcfce7;
+        background: #f0fdf4;
         border: 1px solid #bbf7d0;
         color: #166534;
       }
 
       .result-error {
-        background: #fee2e2;
+        background: #fef2f2;
         border: 1px solid #fecaca;
         color: #991b1b;
       }
@@ -284,112 +254,6 @@
         background: #eff6ff;
         border: 1px solid #dbeafe;
         color: #1e40af;
-      }
-
-      .payment-flow {
-        background: var(--surface);
-        border-radius: 1rem;
-        padding: 2rem;
-        box-shadow: var(--shadow);
-        border: 1px solid var(--border);
-        margin-bottom: 2rem;
-      }
-
-      .payment-header {
-        text-align: center;
-        margin-bottom: 2rem;
-      }
-
-      .payment-title {
-        font-size: 2rem;
-        font-weight: 700;
-        color: var(--text-primary);
-        margin: 0 0 0.5rem 0;
-      }
-
-      .payment-subtitle {
-        font-size: 1rem;
-        color: var(--text-secondary);
-        margin: 0;
-      }
-
-      .payment-amount {
-        text-align: center;
-        margin: 2rem 0;
-      }
-
-      .amount-display {
-        font-size: 3rem;
-        font-weight: 700;
-        color: var(--primary-color);
-        margin: 0;
-        transition: all 0.5s ease-in-out;
-      }
-
-      .amount-label {
-        font-size: 1rem;
-        color: var(--text-secondary);
-        margin: 0.5rem 0 0 0;
-        transition: all 0.5s ease-in-out;
-      }
-
-      .amount-display.fade-out {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-
-      .amount-label.fade-out {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-
-      .wallet-section {
-        background: #f8fafc;
-        border: 1px solid var(--border);
-        border-radius: 0.75rem;
-        padding: 1.5rem;
-        margin: 1.5rem 0;
-      }
-
-      .wallet-status {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        margin-bottom: 1rem;
-      }
-
-      .wallet-address {
-        font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
-        font-size: 0.875rem;
-        color: var(--text-secondary);
-        background: var(--surface);
-        padding: 0.5rem 0.75rem;
-        border-radius: 0.375rem;
-        border: 1px solid var(--border);
-      }
-
-      .loading {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-      }
-
-      .spinner {
-        width: 1rem;
-        height: 1rem;
-        border: 2px solid var(--border);
-        border-top: 2px solid var(--primary-color);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-      }
-
-      @keyframes spin {
-        0% {
-          transform: rotate(0deg);
-        }
-        100% {
-          transform: rotate(360deg);
-        }
       }
 
       .hidden {
@@ -423,114 +287,83 @@
         }
       }
 
-      .flow-steps {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 1rem;
-        margin: 2rem 0;
-        flex-wrap: wrap;
-      }
-
-      .flow-step {
-        display: flex;
-        flex-direction: column;
-        align-items: center;
-        gap: 0.5rem;
+      .info-box {
+        margin-top: 1rem;
         padding: 1rem;
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 0.75rem;
-        min-width: 120px;
-      }
-
-      .step-number {
-        width: 2rem;
-        height: 2rem;
-        border-radius: 50%;
-        background: var(--primary-color);
-        color: white;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
+        background: #f0f9ff;
+        border: 1px solid #0ea5e9;
+        border-radius: 0.5rem;
         font-size: 0.875rem;
+        color: #0c4a6e;
       }
 
-      .step-label {
-        font-size: 0.875rem;
-        font-weight: 500;
-        text-align: center;
+      .info-box ol {
+        margin: 0.5rem 0 0 1rem;
+        padding-left: 0;
       }
 
-      .step-arrow {
-        font-size: 1.5rem;
-        color: var(--text-secondary);
-      }
-
-      @media (max-width: 640px) {
-        .step-arrow {
-          transform: rotate(90deg);
-        }
+      .info-box li {
+        margin-bottom: 0.25rem;
       }
     </style>
   </head>
   <body>
     <header class="header">
       <div class="header-content">
-        <div class="logo">
-          <span>🧪</span>
-          <span>x402 Test Client</span>
-        </div>
-        <div id="connectionStatus" class="status-badge status-disconnected">Disconnected</div>
+        <div class="logo">x402 Facilitator Example</div>
+        <div class="status-badge status-connected">Services Running</div>
       </div>
     </header>
 
     <main class="main-container">
-      <!-- Payment Flow Section -->
-      <div class="payment-flow">
-        <div class="payment-header">
-          <h1 class="payment-title">x402 Protocol Revnet Facilitator</h1>
-          <p class="payment-subtitle">
-            Test client for calling x402-protected APIs and verifying payments
-          </p>
-        </div>
+      <!-- Facilitator Configuration -->
+      <div class="grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon card-icon-primary">⚙️</div>
+            <div>
+              <h2 class="card-title">Facilitator Configuration</h2>
+              <p class="card-subtitle">Connect to x402 facilitator service</p>
+            </div>
+          </div>
 
-        <div class="payment-amount">
-          <div class="amount-display" id="amountDisplay">$0.01</div>
-          <div class="amount-label" id="amountLabel">USDC on Base Network</div>
-        </div>
+          <div class="form-group">
+            <label class="form-label" for="serverUrl">Facilitator URL</label>
+            <input
+              type="text"
+              id="serverUrl"
+              class="form-input"
+              value="http://localhost:3000"
+              placeholder="http://localhost:3000"
+            />
+          </div>
 
-        <div class="flow-steps">
-          <div class="flow-step">
-            <div class="step-number">1</div>
-            <div class="step-label">Connect Wallet</div>
-          </div>
-          <div class="step-arrow">→</div>
-          <div class="flow-step">
-            <div class="step-number">2</div>
-            <div class="step-label">Test Provider APIs</div>
-          </div>
-          <div class="step-arrow">→</div>
-          <div class="flow-step">
-            <div class="step-number">3</div>
-            <div class="step-label">Sign Payments</div>
-          </div>
-        </div>
-
-        <div class="wallet-section">
-          <div class="wallet-status">
-            <span>Wallet Status:</span>
-            <span id="walletStatus" class="status-badge status-disconnected">Not Connected</span>
-          </div>
-          <div id="walletAddress" class="wallet-address hidden"></div>
-          <button id="signButton" class="btn btn-primary" onclick="connectWallet()" disabled>
-            <span>Connect Wallet</span>
+          <button class="btn btn-primary" onclick="testConnection()">
+            <span>Test Connection</span>
           </button>
+
+          <div id="connectionResult" class="result hidden"></div>
+        </div>
+
+        <!-- Supported Networks -->
+        <div class="card">
+          <div class="card-header">
+            <div class="card-icon card-icon-success">🌐</div>
+            <div>
+              <h2 class="card-title">Supported Networks</h2>
+              <p class="card-subtitle">Check facilitator network support</p>
+            </div>
+          </div>
+
+          <button class="btn btn-secondary" onclick="getSupportedNetworks()">
+            <span>Get Networks</span>
+          </button>
+
+          <div id="supportedResult" class="result hidden"></div>
         </div>
       </div>
 
-      <!-- Provider API Testing Section -->
+      <!-- Provider API Testing -->
       <div class="card" style="margin-bottom: 2rem">
         <div class="card-header">
           <div class="card-icon card-icon-primary">🔗</div>
@@ -563,74 +396,24 @@
           </div>
         </div>
 
-        <button class="btn btn-primary" onclick="testProviderEndpoint()">
+        <button class="btn btn-primary" onclick="redirectToProviderEndpoint()">
           <span>Test & Pay for Endpoint</span>
         </button>
 
-        <div
-          style="
-            margin-top: 1rem;
-            padding: 0.75rem;
-            background: #f0f9ff;
-            border: 1px solid #0ea5e9;
-            border-radius: 0.5rem;
-            font-size: 0.875rem;
-            color: #0c4a6e;
-          "
-        >
-          <strong>💡 Note:</strong> Connect your wallet above to sign payments. The test will
-          automatically handle the x402 payment flow.
+        <div class="info-box">
+          <p><strong>💡 How it works:</strong></p>
+          <p>
+            Click the button above to open the provider endpoint in a new tab. The provider will:
+          </p>
+          <ol>
+            <li>Show a 402 Payment Required response</li>
+            <li>Display the x402 paywall with payment requirements</li>
+            <li>Allow you to connect your wallet and pay</li>
+            <li>Grant access to the protected content after successful payment</li>
+          </ol>
         </div>
 
         <div id="providerResult" class="result hidden"></div>
-      </div>
-
-      <!-- Configuration Grid -->
-      <div class="grid">
-        <!-- Server Configuration -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-icon card-icon-primary">⚙️</div>
-            <div>
-              <h2 class="card-title">Revnet Facilitator Configuration</h2>
-              <p class="card-subtitle">Connect to x402 facilitator service</p>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label class="form-label" for="serverUrl">Facilitator URL</label>
-            <input
-              type="text"
-              id="serverUrl"
-              class="form-input"
-              value="http://localhost:3000"
-              placeholder="http://localhost:3000"
-            />
-          </div>
-
-          <button class="btn btn-primary" onclick="testConnection()">
-            <span>Test Connection</span>
-          </button>
-
-          <div id="connectionResult" class="result hidden"></div>
-        </div>
-
-        <!-- Supported Networks -->
-        <div class="card">
-          <div class="card-header">
-            <div class="card-icon card-icon-success">🌐</div>
-            <div>
-              <h2 class="card-title">Supported Networks</h2>
-              <p class="card-subtitle">View networks supported by facilitator</p>
-            </div>
-          </div>
-
-          <button class="btn btn-secondary" onclick="getSupportedNetworks()">
-            <span>Get Networks</span>
-          </button>
-
-          <div id="supportedResult" class="result hidden"></div>
-        </div>
       </div>
     </main>
 
@@ -638,139 +421,12 @@
       const serverUrl = document.getElementById("serverUrl");
       const connectionResult = document.getElementById("connectionResult");
       const supportedResult = document.getElementById("supportedResult");
-      const walletStatus = document.getElementById("walletStatus");
-      const walletAddress = document.getElementById("walletAddress");
-      const signButton = document.getElementById("signButton");
-      const connectionStatus = document.getElementById("connectionStatus");
       const providerResult = document.getElementById("providerResult");
-
-      let wallet = null;
-      let currentAccount = null;
-
-      // Payment rotation configuration
-      const paymentConfigs = [
-        { amount: "1.00 ETH", label: "ETH on Main Network" },
-        { amount: "$1.00 DIA", label: "DIA on Optimism" },
-        { amount: "$1 USDT", label: "USDT on Arbitrum" },
-        { amount: "$1 USDC", label: "USDC on Base Network" },
-      ];
-
-      let currentPaymentIndex = 0;
-      let paymentRotationInterval = null;
 
       // Initialize the page
       document.addEventListener("DOMContentLoaded", function () {
-        checkWalletConnection();
         testConnection();
-        startPaymentRotation();
       });
-
-      // Start payment rotation
-      function startPaymentRotation() {
-        const amountDisplay = document.getElementById("amountDisplay");
-        const amountLabel = document.getElementById("amountLabel");
-
-        if (!amountDisplay || !amountLabel) return;
-
-        // Rotate every 3 seconds
-        paymentRotationInterval = setInterval(() => {
-          // Fade out current content
-          amountDisplay.classList.add("fade-out");
-          amountLabel.classList.add("fade-out");
-
-          // After fade out completes, update content and fade in
-          setTimeout(() => {
-            currentPaymentIndex = (currentPaymentIndex + 1) % paymentConfigs.length;
-            const config = paymentConfigs[currentPaymentIndex];
-
-            amountDisplay.textContent = config.amount;
-            amountLabel.textContent = config.label;
-
-            // Remove fade-out class to trigger fade-in
-            amountDisplay.classList.remove("fade-out");
-            amountLabel.classList.remove("fade-out");
-          }, 500); // Wait for fade-out to complete
-        }, 3000);
-      }
-
-      // Stop payment rotation
-      function stopPaymentRotation() {
-        if (paymentRotationInterval) {
-          clearInterval(paymentRotationInterval);
-          paymentRotationInterval = null;
-        }
-      }
-
-      // Check if wallet is already connected
-      async function checkWalletConnection() {
-        if (typeof window.ethereum !== "undefined") {
-          try {
-            const accounts = await window.ethereum.request({ method: "eth_accounts" });
-            if (accounts.length > 0) {
-              currentAccount = accounts[0];
-              updateWalletStatus(true, currentAccount);
-              signButton.disabled = false;
-              signButton.innerHTML = "<span>Wallet Connected</span>";
-            }
-          } catch (error) {
-            console.error("Error checking wallet connection:", error);
-          }
-        }
-      }
-
-      // Update wallet status display
-      function updateWalletStatus(connected, address = null) {
-        if (connected) {
-          walletStatus.textContent = "Connected";
-          walletStatus.className = "status-badge status-connected";
-          if (address) {
-            walletAddress.textContent = address;
-            walletAddress.classList.remove("hidden");
-          }
-        } else {
-          walletStatus.textContent = "Not Connected";
-          walletStatus.className = "status-badge status-disconnected";
-          walletAddress.classList.add("hidden");
-        }
-      }
-
-      // Connect wallet
-      async function connectWallet() {
-        if (typeof window.ethereum === "undefined") {
-          showResult(
-            connectionResult,
-            "MetaMask is not installed. Please install MetaMask to continue.",
-            "error",
-          );
-          return;
-        }
-
-        try {
-          signButton.innerHTML =
-            '<div class="loading"><div class="spinner"></div><span>Connecting...</span></div>';
-          signButton.disabled = true;
-
-          const accounts = await window.ethereum.request({
-            method: "eth_requestAccounts",
-          });
-
-          if (accounts.length > 0) {
-            currentAccount = accounts[0];
-            updateWalletStatus(true, currentAccount);
-            signButton.innerHTML = "<span>Wallet Connected</span>";
-            showResult(
-              connectionResult,
-              `Wallet connected successfully!\nAddress: ${currentAccount}`,
-              "success",
-            );
-          }
-        } catch (error) {
-          console.error("Error connecting wallet:", error);
-          showResult(connectionResult, `Error connecting wallet: ${error.message}`, "error");
-          signButton.innerHTML = "<span>Connect Wallet</span>";
-          signButton.disabled = false;
-        }
-      }
 
       // Test connection to facilitator
       async function testConnection() {
@@ -783,15 +439,11 @@
               `✅ Connected to facilitator\nStatus: ${data.status}\nVersion: ${data.version}`,
               "success",
             );
-            connectionStatus.textContent = "Connected";
-            connectionStatus.className = "status-badge status-connected";
           } else {
             throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
         } catch (error) {
           showResult(connectionResult, `❌ Connection failed: ${error.message}`, "error");
-          connectionStatus.textContent = "Disconnected";
-          connectionStatus.className = "status-badge status-disconnected";
         }
       }
 
@@ -803,7 +455,7 @@
             const data = await response.json();
             showResult(
               supportedResult,
-              `✅ Supported Networks:\n${JSON.stringify(data, null, 2)}`,
+              `✅ Supported networks:\n${JSON.stringify(data, null, 2)}`,
               "success",
             );
           } else {
@@ -814,271 +466,23 @@
         }
       }
 
-      // Test provider endpoint with x402 payment flow
-      async function testProviderEndpoint() {
+      // Redirect to provider endpoint for x402 payment flow
+      function redirectToProviderEndpoint() {
         const providerUrl = document.getElementById("providerUrl").value;
         const endpoint = document.getElementById("testEndpoint").value;
 
-        if (!currentAccount) {
-          showResult(providerResult, "❌ Please connect your wallet first", "error");
-          return;
-        }
+        const url = `${providerUrl}${endpoint}`;
+        console.log(`Redirecting to provider endpoint: ${url}`);
 
-        try {
-          const url = `${providerUrl}${endpoint}`;
-          const method = endpoint.includes("/api/data") ? "POST" : "GET";
+        // Open the provider endpoint in a new tab
+        window.open(url, "_blank");
 
-          // First, make the request without payment to get the 402 response
-          const options = {
-            method: method,
-            headers: {
-              "Content-Type": "application/json",
-            },
-          };
-
-          if (method === "POST") {
-            options.body = JSON.stringify({ test: "data" });
-          }
-
-          showResult(providerResult, "🔄 Making request to provider...", "info");
-
-          const response = await fetch(url, options);
-          const data = await response.text();
-
-          if (response.status === 402) {
-            // Parse the 402 response to get payment requirements
-            try {
-              const responseData = JSON.parse(data);
-
-              // The payment requirements are in the 'accepts' array
-              const paymentRequirements = responseData.accepts && responseData.accepts[0];
-
-              if (!paymentRequirements) {
-                showResult(
-                  providerResult,
-                  `🔒 Payment Required (402)\n\nRaw Response:\n${JSON.stringify(responseData, null, 2)}`,
-                  "info",
-                );
-                return;
-              }
-
-              showResult(
-                providerResult,
-                `🔒 Payment Required (402)\n\nPayment Requirements:\n${JSON.stringify(paymentRequirements, null, 2)}\n\n🔄 Now signing payment...`,
-                "info",
-              );
-
-              // Sign the payment
-              const signedPayment = await signX402Payment(paymentRequirements, url, method);
-
-              if (signedPayment) {
-                // First, verify the payment with the facilitator
-                showResult(providerResult, "🔄 Verifying payment with facilitator...", "info");
-
-                const facilitatorUrl = document.getElementById("serverUrl").value;
-                const verifyResponse = await fetch(`${facilitatorUrl}/verify`, {
-                  method: "POST",
-                  headers: {
-                    "Content-Type": "application/json",
-                  },
-                  body: JSON.stringify({
-                    x402Version: 1,
-                    paymentPayload: signedPayment,
-                    paymentRequirements: paymentRequirements,
-                  }),
-                });
-
-                let verifyData;
-                try {
-                  verifyData = await verifyResponse.json();
-                } catch (parseError) {
-                  showResult(
-                    providerResult,
-                    `❌ Verification response parse error: ${parseError.message}\n\nResponse status: ${verifyResponse.status}\nResponse text: ${await verifyResponse.text()}`,
-                    "error",
-                  );
-                  return;
-                }
-
-                console.log("Verification response:", verifyData);
-
-                if (!verifyResponse.ok || !verifyData.isValid) {
-                  showResult(
-                    providerResult,
-                    `❌ Payment verification failed:\nStatus: ${verifyResponse.status}\nError: ${verifyData.error || verifyData.invalidReason || "Unknown error"}\n\nFull response: ${JSON.stringify(verifyData, null, 2)}`,
-                    "error",
-                  );
-                  return;
-                }
-
-                showResult(
-                  providerResult,
-                  "✅ Payment verified! Making authenticated request...",
-                  "info",
-                );
-
-                // Now make the request to the provider with the verified payment
-                const paymentOptions = {
-                  method: method,
-                  headers: {
-                    "Content-Type": "application/json",
-                    "X-PAYMENT": JSON.stringify(signedPayment),
-                  },
-                };
-
-                if (method === "POST") {
-                  paymentOptions.body = JSON.stringify({ test: "data" });
-                }
-
-                const authResponse = await fetch(url, paymentOptions);
-                const authData = await authResponse.text();
-
-                if (authResponse.ok) {
-                  showResult(
-                    providerResult,
-                    `✅ Payment Successful!\n\nResponse (${authResponse.status}):\n${authData}`,
-                    "success",
-                  );
-                } else {
-                  showResult(
-                    providerResult,
-                    `❌ Payment failed (${authResponse.status})\n\nResponse:\n${authData}`,
-                    "error",
-                  );
-                }
-              } else {
-                showResult(providerResult, "❌ Payment signing failed", "error");
-              }
-            } catch (parseError) {
-              showResult(
-                providerResult,
-                `🔒 Payment Required (402)\n\nRaw Response:\n${data}`,
-                "info",
-              );
-            }
-          } else if (response.ok) {
-            showResult(
-              providerResult,
-              `✅ Success (${response.status})\n\nResponse:\n${data}`,
-              "success",
-            );
-          } else {
-            showResult(
-              providerResult,
-              `❌ Error (${response.status})\n\nResponse:\n${data}`,
-              "error",
-            );
-          }
-        } catch (error) {
-          showResult(providerResult, `❌ Network Error: ${error.message}`, "error");
-        }
-      }
-
-      // Sign x402 payment using MetaMask
-      async function signX402Payment(paymentRequirements, resourceUrl, method) {
-        try {
-          if (!currentAccount) {
-            throw new Error("No wallet connected");
-          }
-
-          console.log("Payment requirements:", paymentRequirements);
-
-          // Extract payment details from requirements
-          const { scheme, network, maxAmountRequired, payTo, asset, maxTimeoutSeconds } =
-            paymentRequirements;
-
-          if (!scheme) {
-            throw new Error(
-              `Missing payment scheme in requirements: ${JSON.stringify(paymentRequirements)}`,
-            );
-          }
-
-          if (scheme !== "exact") {
-            throw new Error(`Unsupported payment scheme: ${scheme}`);
-          }
-
-          // Create the authorization object
-          const now = Math.floor(Date.now() / 1000);
-          const validAfter = now;
-          const validBefore = now + (maxTimeoutSeconds || 300); // 5 minutes default
-
-          // Generate a random nonce (32 bytes) - match x402 library format
-          const nonceBytes = new Uint8Array(32);
-          crypto.getRandomValues(nonceBytes);
-          const nonce =
-            "0x" + Array.from(nonceBytes, byte => byte.toString(16).padStart(2, "0")).join("");
-
-          const authorization = {
-            from: currentAccount,
-            to: payTo,
-            value: maxAmountRequired,
-            validAfter: validAfter.toString(),
-            validBefore: validBefore.toString(),
-            nonce: nonce,
-          };
-
-          // Create EIP-712 typed data for ERC-3009 transferWithAuthorization
-          // This must match exactly what the x402 verification expects
-          const domain = {
-            name: paymentRequirements.extra.name, // "USD Coin"
-            version: paymentRequirements.extra.version, // "2"
-            chainId: network === "base" ? 8453 : 84532, // Base mainnet or Base Sepolia
-            verifyingContract: paymentRequirements.asset, // USDC contract address
-          };
-
-          const types = {
-            TransferWithAuthorization: [
-              { name: "from", type: "address" },
-              { name: "to", type: "address" },
-              { name: "value", type: "uint256" },
-              { name: "validAfter", type: "uint256" },
-              { name: "validBefore", type: "uint256" },
-              { name: "nonce", type: "bytes32" },
-            ],
-          };
-
-          const message = {
-            from: authorization.from, // Keep original case (checksummed)
-            to: authorization.to, // Keep original case (checksummed)
-            value: authorization.value, // Keep as string
-            validAfter: authorization.validAfter, // Keep as string
-            validBefore: authorization.validBefore, // Keep as string
-            nonce: authorization.nonce, // This should be a hex string like "0x..."
-          };
-
-          // Debug: log the EIP-712 data being signed
-          console.log("🔍 EIP-712 Domain:", domain);
-          console.log("🔍 EIP-712 Types:", types);
-          console.log("🔍 EIP-712 Message:", message);
-
-          // Sign using EIP-712 typed data (ERC-3009 transferWithAuthorization)
-          const signature = await window.ethereum.request({
-            method: "eth_signTypedData_v4",
-            params: [
-              currentAccount,
-              { domain, types, primaryType: "TransferWithAuthorization", message },
-            ],
-          });
-
-          // Debug: log the signature we got back
-          console.log("🔍 EIP-712 Signature:", signature);
-
-          // Create the complete payment payload
-          const paymentPayload = {
-            x402Version: 1,
-            scheme: "exact",
-            network: network,
-            payload: {
-              signature: signature,
-              authorization: authorization,
-            },
-          };
-
-          return paymentPayload;
-        } catch (error) {
-          console.error("Error signing payment:", error);
-          return null;
-        }
+        // Show a helpful message
+        showResult(
+          providerResult,
+          `🔗 Opened ${url} in a new tab. Complete the payment flow there!`,
+          "info",
+        );
       }
 
       // Show result in a result div
@@ -1086,21 +490,6 @@
         element.textContent = message;
         element.className = `result result-${type} fade-in`;
         element.classList.remove("hidden");
-      }
-
-      // Listen for account changes
-      if (typeof window.ethereum !== "undefined") {
-        window.ethereum.on("accountsChanged", function (accounts) {
-          if (accounts.length === 0) {
-            currentAccount = null;
-            updateWalletStatus(false);
-            signButton.innerHTML = "<span>Connect Wallet</span>";
-            signButton.disabled = false;
-          } else {
-            currentAccount = accounts[0];
-            updateWalletStatus(true, currentAccount);
-          }
-        });
       }
     </script>
   </body>
