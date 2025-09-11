@@ -51,20 +51,20 @@ async function settle(
   // Call the original settle function to execute the EIP-3009 transfer
   const settlementResult = await originalSettle(signer, paymentPayload, paymentRequirements);
 
-  console.log("✅ Original settlement completed:", settlementResult);
+  console.log("✅ Settlement to escrow completed:", settlementResult);
 
-  // For now, hardcode Revnet parameters for testing
-  const revnetParams = {
+  // Use hardcoded Revnet configuration (provider-facilitator agreement)
+  const revnetConfig = {
     projectId: "127",
     beneficiary: (paymentPayload.payload as any).authorization.from, // Use buyer's EOA
-    memo: "x402-payment",
+    memo: `x402-${paymentRequirements.scheme}-${paymentRequirements.resource.replace(/[^a-zA-Z0-9]/g, "_")}`,
     minReturnedTokens: "0",
     metadata: "0x",
   };
 
   // If settlement was successful, make the Revnet payment
   if (settlementResult.success) {
-    console.log("🏗️ Initiating Revnet payment after successful settlement...");
+    console.log("🏗️ Initiating Revnet payment (separate transaction) after escrow settlement...");
 
     try {
       // Add a timeout wrapper to prevent hanging
@@ -95,59 +95,101 @@ async function settle(
 
         // Parse the amount (USDC has 6 decimals)
         const amount = BigInt(paymentRequirements.maxAmountRequired);
-        const projectId = BigInt(revnetParams.projectId);
-        const minReturnedTokens = BigInt(revnetParams.minReturnedTokens);
+        const projectId = BigInt(revnetConfig.projectId);
+        const minReturnedTokens = BigInt(revnetConfig.minReturnedTokens);
 
-        // Get current nonce for the escrow account
-        const currentNonce = await publicClient.getTransactionCount({
-          address: account.address,
-          blockTag: "pending",
-        });
-        console.log("🔢 Current nonce for escrow account:", currentNonce);
-
-        // First, approve the JBMultiTerminal to spend USDC from the escrow account
-        console.log("🔐 Approving USDC spending for JBMultiTerminal...");
-        const approveTxHash = await walletClient.writeContract({
+        // Check current allowance and set unlimited if needed
+        console.log("🔍 Checking current USDC allowance...");
+        const currentAllowance = await publicClient.readContract({
           address: paymentRequirements.asset as `0x${string}`, // USDC contract
           abi: [
             {
               inputs: [
+                { name: "owner", type: "address" },
                 { name: "spender", type: "address" },
-                { name: "amount", type: "uint256" },
               ],
-              name: "approve",
-              outputs: [{ name: "", type: "bool" }],
-              stateMutability: "nonpayable",
+              name: "allowance",
+              outputs: [{ name: "", type: "uint256" }],
+              stateMutability: "view",
               type: "function",
             },
           ],
-          functionName: "approve",
-          args: [
-            JB_MULTI_TERMINAL_ADDRESS, // spender
-            amount, // amount to approve
-          ],
-          gasPrice: increasedGasPrice, // Use increased gas price
-          nonce: currentNonce, // Use current nonce
+          functionName: "allowance",
+          args: [account.address, JB_MULTI_TERMINAL_ADDRESS],
         });
 
-        console.log("✅ USDC approval successful:", approveTxHash);
+        console.log("🔍 Current allowance:", currentAllowance.toString());
 
-        // Wait for approval transaction to be mined with shorter timeout
-        console.log("⏳ Waiting for approval transaction to be mined...");
-        try {
-          await publicClient.waitForTransactionReceipt({
-            hash: approveTxHash,
-            timeout: 10000, // 10 second timeout
-            confirmations: 0, // No confirmations needed
+        let approveTxHash: string | undefined;
+
+        // Check if we already have unlimited allowance (max uint256)
+        const unlimitedAllowance = BigInt(
+          "0xffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff",
+        );
+
+        if (currentAllowance < unlimitedAllowance) {
+          console.log("🔐 Setting unlimited USDC allowance for JBMultiTerminal...");
+
+          // Get current nonce for the escrow account right before the approval
+          const approveNonce = await publicClient.getTransactionCount({
+            address: account.address,
+            blockTag: "pending",
           });
-          console.log("✅ Approval transaction confirmed");
-        } catch (timeoutError) {
-          console.log("⚠️ Approval transaction timeout, proceeding anyway...");
-          // Continue with the payment even if we can't confirm the approval
+          console.log("🔢 Current nonce for approval:", approveNonce);
+
+          approveTxHash = await walletClient.writeContract({
+            address: paymentRequirements.asset as `0x${string}`, // USDC contract
+            abi: [
+              {
+                inputs: [
+                  { name: "spender", type: "address" },
+                  { name: "amount", type: "uint256" },
+                ],
+                name: "approve",
+                outputs: [{ name: "", type: "bool" }],
+                stateMutability: "nonpayable",
+                type: "function",
+              },
+            ],
+            functionName: "approve",
+            args: [
+              JB_MULTI_TERMINAL_ADDRESS, // spender
+              unlimitedAllowance, // unlimited allowance
+            ],
+            gasPrice: increasedGasPrice, // Use increased gas price
+            nonce: approveNonce, // Use current nonce
+          });
+
+          console.log("✅ USDC unlimited approval successful:", approveTxHash);
+
+          // Wait for approval transaction to be mined with shorter timeout
+          console.log("⏳ Waiting for approval transaction to be mined...");
+          try {
+            await publicClient.waitForTransactionReceipt({
+              hash: approveTxHash as `0x${string}`,
+              timeout: 10000, // 10 second timeout
+              confirmations: 0, // No confirmations needed
+            });
+            console.log("✅ Approval transaction confirmed");
+          } catch (timeoutError) {
+            console.log("⚠️ Approval transaction timeout, proceeding anyway...");
+            // Continue with the payment even if we can't confirm the approval
+          }
+        } else {
+          console.log("✅ Unlimited allowance already exists, skipping approval");
         }
 
         // Now call JBMultiTerminal.pay() from the escrow account
         console.log("🏗️ Calling JBMultiTerminal.pay()...");
+
+        // Get current nonce for the escrow account right before the pay call
+        // This will be the correct nonce after any approval transaction has been processed
+        const payNonce = await publicClient.getTransactionCount({
+          address: account.address,
+          blockTag: "pending",
+        });
+        console.log("🔢 Current nonce for pay:", payNonce);
+
         const revnetTxHash = await walletClient.writeContract({
           address: JB_MULTI_TERMINAL_ADDRESS,
           abi: JB_MULTI_TERMINAL_ABI,
@@ -156,13 +198,13 @@ async function settle(
             projectId, // _projectId
             paymentRequirements.asset as `0x${string}`, // _token (USDC contract address)
             amount, // _amount
-            revnetParams.beneficiary as `0x${string}`, // _beneficiary (buyer's EOA)
+            revnetConfig.beneficiary as `0x${string}`, // _beneficiary (buyer's EOA)
             minReturnedTokens, // _minReturnedTokens
-            revnetParams.memo, // _memo
-            revnetParams.metadata as `0x${string}`, // _metadata
+            revnetConfig.memo, // _memo
+            revnetConfig.metadata as `0x${string}`, // _metadata
           ],
           gasPrice: increasedGasPrice, // Use increased gas price
-          nonce: BigInt(currentNonce) + 1n, // Use next nonce after approval
+          nonce: payNonce, // Use current nonce
           // No value field for USDC payments (only for ETH payments)
         });
 
@@ -182,8 +224,8 @@ async function settle(
           success: true,
           approvalTransactionHash: approveTxHash,
           paymentTransactionHash: revnetTxHash,
-          projectId: revnetParams.projectId,
-          beneficiary: revnetParams.beneficiary,
+          projectId: revnetConfig.projectId,
+          beneficiary: revnetConfig.beneficiary,
           amount: paymentRequirements.maxAmountRequired,
           token: paymentRequirements.asset,
           escrowAccount: paymentRequirements.payTo,
@@ -204,8 +246,8 @@ async function settle(
       (settlementResult as any).revnetPayment = {
         success: false,
         error: revnetError instanceof Error ? revnetError.message : String(revnetError),
-        projectId: revnetParams.projectId,
-        beneficiary: revnetParams.beneficiary,
+        projectId: revnetConfig.projectId,
+        beneficiary: revnetConfig.beneficiary,
         amount: paymentRequirements.maxAmountRequired,
         escrowAccount: paymentRequirements.payTo,
       };
@@ -346,47 +388,8 @@ app.post("/verify", async (req: Request, res: Response) => {
     // verify
     const valid = await verify(client, paymentPayload, paymentRequirements);
 
-    // Add Revnet parameter binding if present in headers
-    const revnetProjectId = req.headers["x-revnet-projectid"] as string;
-    const revnetMemo = req.headers["x-revnet-memo"] as string;
-    const revnetMinReturnedTokens = req.headers["x-revnet-minreturnedtokens"] as string;
-    const revnetMetadata = req.headers["x-revnet-metadata"] as string;
-
-    if (revnetProjectId) {
-      const revnetParams = {
-        projectId: revnetProjectId,
-        beneficiary: (paymentPayload.payload as any).authorization.from, // Use buyer's EOA
-        memo: revnetMemo || "",
-        minReturnedTokens: revnetMinReturnedTokens || "0",
-        metadata: revnetMetadata || "0x",
-      };
-
-      // Create a hash of the Revnet parameters to bind them to the payment
-      const abiCoder = new AbiCoder();
-      const revnetHash = keccak256(
-        abiCoder.encode(
-          ["string", "address", "string", "string", "bytes"],
-          [
-            revnetParams.projectId,
-            revnetParams.beneficiary,
-            revnetParams.memo,
-            revnetParams.minReturnedTokens,
-            revnetParams.metadata,
-          ],
-        ),
-      );
-
-      // Store the Revnet hash and parameters in the verification result
-      (valid as any).revnetHash = revnetHash;
-      (valid as any).revnetParams = revnetParams;
-
-      console.log("🏗️ Revnet parameters bound:", {
-        projectId: revnetParams.projectId,
-        beneficiary: revnetParams.beneficiary,
-        memo: revnetParams.memo,
-        hash: revnetHash,
-      });
-    }
+    // Revnet integration is handled automatically in the settle function
+    // No need to bind parameters here since it's a provider-facilitator agreement
 
     // Debug: log verification result
     console.log("🔍 Verification result:", JSON.stringify(valid, null, 2));
@@ -459,96 +462,7 @@ app.post("/settle", async (req: Request, res: Response) => {
     const response = await settle(signer, paymentPayload, paymentRequirements);
     console.log("✅ Settlement completed:", JSON.stringify(response, null, 2));
 
-    // If Revnet parameters exist in headers, log the intent for manual processing
-    const revnetProjectId = req.headers["x-revnet-projectid"] as string;
-    const revnetMemo = req.headers["x-revnet-memo"] as string;
-    const revnetMinReturnedTokens = req.headers["x-revnet-minreturnedtokens"] as string;
-    const revnetMetadata = req.headers["x-revnet-metadata"] as string;
-
-    if (revnetProjectId) {
-      const revnetParams = {
-        projectId: revnetProjectId,
-        beneficiary: (paymentPayload.payload as any).authorization.from, // Use buyer's EOA
-        memo: revnetMemo || "",
-        minReturnedTokens: revnetMinReturnedTokens || "0",
-        metadata: revnetMetadata || "0x",
-      };
-
-      // Use the buyer's EOA from the payment payload as the beneficiary
-      const buyerAddress = (paymentPayload.payload as any).authorization.from;
-
-      console.log("🏗️ Initiating Revnet payment...", {
-        projectId: revnetParams.projectId,
-        beneficiary: buyerAddress, // Use buyer's EOA instead of hardcoded
-        amount: paymentRequirements.maxAmountRequired,
-        token: paymentRequirements.asset,
-        memo: revnetParams.memo,
-        minReturnedTokens: revnetParams.minReturnedTokens,
-        metadata: revnetParams.metadata,
-        network: paymentRequirements.network,
-        jbMultiTerminal: JB_MULTI_TERMINAL_ADDRESS,
-        escrowAccount: paymentRequirements.payTo, // The account that received the USDC from EIP-3009
-      });
-
-      try {
-        // Create wallet client for the escrow account (who received the USDC)
-        const account = privateKeyToAccount(EVM_PRIVATE_KEY as `0x${string}`);
-        const walletClient = createWalletClient({
-          account,
-          chain: paymentRequirements.network === "base" ? base : base, // Add other networks as needed
-          transport: http(),
-        });
-
-        // Parse the amount (USDC has 6 decimals)
-        const amount = BigInt(paymentRequirements.maxAmountRequired);
-        const projectId = BigInt(revnetParams.projectId);
-        const minReturnedTokens = BigInt(revnetParams.minReturnedTokens);
-
-        // Call JBMultiTerminal.pay() from the escrow account
-        // For USDC payments, we use the USDC contract address and no value field
-        const revnetTxHash = await walletClient.writeContract({
-          address: JB_MULTI_TERMINAL_ADDRESS,
-          abi: JB_MULTI_TERMINAL_ABI,
-          functionName: "pay",
-          args: [
-            projectId, // _projectId
-            paymentRequirements.asset as `0x${string}`, // _token (USDC contract address)
-            amount, // _amount
-            buyerAddress as `0x${string}`, // _beneficiary (buyer's EOA)
-            minReturnedTokens, // _minReturnedTokens
-            revnetParams.memo, // _memo
-            revnetParams.metadata as `0x${string}`, // _metadata
-          ],
-          // No value field for USDC payments (only for ETH payments)
-        });
-
-        console.log("✅ Revnet payment successful:", revnetTxHash);
-
-        // Add Revnet payment result to the settlement response
-        (response as any).revnetPayment = {
-          success: true,
-          transactionHash: revnetTxHash,
-          projectId: revnetParams.projectId,
-          beneficiary: buyerAddress,
-          amount: paymentRequirements.maxAmountRequired,
-          token: paymentRequirements.asset,
-          escrowAccount: paymentRequirements.payTo,
-          jbMultiTerminal: JB_MULTI_TERMINAL_ADDRESS,
-        };
-      } catch (revnetError) {
-        console.error("❌ Revnet payment failed:", revnetError);
-
-        // Add error to response but don't fail the entire settlement
-        (response as any).revnetPayment = {
-          success: false,
-          error: revnetError instanceof Error ? revnetError.message : String(revnetError),
-          projectId: revnetParams.projectId,
-          beneficiary: buyerAddress,
-          amount: paymentRequirements.maxAmountRequired,
-          escrowAccount: paymentRequirements.payTo,
-        };
-      }
-    }
+    // Revnet integration is now handled in the custom settle function
 
     res.json(response);
   } catch (error) {

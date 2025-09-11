@@ -7,7 +7,7 @@ A custom x402 facilitator implementation that demonstrates **Pattern A (Two-step
 This is a **proof-of-concept example** with the following hardcoded constraints:
 
 - **Network**: Base Mainnet only
-- **Revnet Project**: Project ID `127` (hardcoded)
+- **Revnet Project**: Project ID `1` (hardcoded)
 - **Terminal**: `JBMultiTerminal` at `0xdb9644369c79c3633cde70d2df50d827d7dc7dbc` (hardcoded)
 - **Token**: USDC only (`0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913`)
 - **Payment Flow**: Two-step settlement (EIP-3009 → Revnet)
@@ -29,7 +29,7 @@ Buyer → [transferWithAuthorization] → Facilitator Escrow
 ### **Step 2: Revnet Payment**
 
 ```
-Facilitator Escrow → [approve + pay] → Revnet Project 127
+Facilitator Escrow → [approve + pay] → Revnet Project 1
 ```
 
 - Escrow approves `JBMultiTerminal` to spend USDC
@@ -144,7 +144,7 @@ async function settle(signer, paymentPayload, paymentRequirements) {
 
 ### **Revnet Parameters**
 
-- **Project ID**: `127` (hardcoded)
+- **Project ID**: `1` (hardcoded)
 - **Beneficiary**: Buyer's EOA (dynamic)
 - **Memo**: `"x402-payment"` (add your own for enhanced verification use cases)
 - **Min Returned Tokens**: `0`

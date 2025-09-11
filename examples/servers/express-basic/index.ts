@@ -221,7 +221,7 @@ app.get("/health", (req, res) => {
     timestamp: new Date().toISOString(),
     version: "1.0.0",
     revnetIntegration: true,
-    projectId: "127",
+    projectId: "1",
   });
 });
 
@@ -231,10 +231,10 @@ app.listen(PORT, () => {
   console.log(`💰 Payment address: ${payTo}`);
   console.log(`🌐 Network: ${network}`);
   console.log(`🔗 Facilitator: ${facilitatorUrl}`);
-  console.log(`🏗️  Revnet Integration: Enabled (Project ID: 127)`);
+  console.log(`🏗️  Revnet Integration: Enabled (Project ID: 1)`);
   console.log("\n📋 Available endpoints:");
-  console.log("  GET  /weather           - $0.001 → Revnet Project 127");
-  console.log("  GET  /premium/*         - 1 USDC → Revnet Project 127");
-  console.log("  POST /api/data          - $0.005 → Revnet Project 127");
+  console.log("  GET  /weather           - $0.001 → Revnet Project 1");
+  console.log("  GET  /premium/*         - 1 USDC → Revnet Project 1");
+  console.log("  POST /api/data          - $0.005 → Revnet Project 1");
   console.log("  GET  /health            - Free");
 });
