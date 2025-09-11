@@ -8,7 +8,6 @@ config();
 const facilitatorUrl = process.env.FACILITATOR_URL as Resource;
 const payTo = process.env.ADDRESS as `0x${string}` | SolanaAddress;
 const network = (process.env.NETWORK || "base") as Network;
-const revnetProjectId = process.env.REVNET_PROJECT_ID || "127";
 const usdcContractAddress =
   process.env.USDC_CONTRACT_ADDRESS || "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
 const webClientUrl = process.env.WEB_CLIENT_URL || "http://localhost:8000";
@@ -114,13 +113,6 @@ app.get("/weather", (req, res) => {
   // Get the actual payer from the payment header
   const payer = getPayerFromPaymentHeader(req);
 
-  // Add Revnet configuration to response headers
-  res.set({
-    "X-Revnet-ProjectId": "127",
-    "X-Revnet-Memo": "env=production&CID=weather-api&fid=1",
-    "X-Revnet-MinReturnedTokens": "0",
-    "X-Revnet-Metadata": "0x",
-  });
 
   res.json({
     location: "San Francisco",
@@ -128,7 +120,6 @@ app.get("/weather", (req, res) => {
     condition: "Sunny",
     humidity: 45,
     timestamp: new Date().toISOString(),
-    revnetProjectId: "127", // Include Revnet project info in response
     beneficiary: payer || "unknown", // Use actual payer address
   });
 });
@@ -137,19 +128,11 @@ app.get("/premium/content", (req, res) => {
   // Get the actual payer from the payment header
   const payer = getPayerFromPaymentHeader(req);
 
-  // Add Revnet configuration to response headers
-  res.set({
-    "X-Revnet-ProjectId": "127",
-    "X-Revnet-Memo": "env=production&CID=premium-content&fid=1",
-    "X-Revnet-MinReturnedTokens": "0",
-    "X-Revnet-Metadata": "0x",
-  });
 
   res.json({
     content: "This is premium content that requires payment",
     features: ["Advanced analytics", "Real-time updates", "Priority support"],
     accessLevel: "premium",
-    revnetProjectId: "127",
     beneficiary: payer || "unknown", // Use actual payer address
   });
 });
@@ -165,7 +148,6 @@ app.get("/premium/analytics", (req, res) => {
       growth: "+15%",
     },
     reportDate: new Date().toISOString(),
-    revnetProjectId: "127",
     beneficiary: payer || "unknown", // Use actual payer address
   });
 });
@@ -190,7 +172,6 @@ app.get("/premium/data", (req, res) => {
     },
     timestamp: new Date().toISOString(),
     accessLevel: "premium",
-    revnetProjectId: "127",
     beneficiary: payer || "unknown", // Use actual payer address
   });
 });
@@ -204,7 +185,6 @@ app.post("/api/data", (req, res) => {
     result: "Data processing completed successfully",
     processingTime: "2.3s",
     timestamp: new Date().toISOString(),
-    revnetProjectId: "127",
     beneficiary: payer || "unknown", // Use actual payer address
   });
 });
@@ -216,7 +196,6 @@ app.get("/health", (req, res) => {
     timestamp: new Date().toISOString(),
     version: "1.0.0",
     revnetIntegration: true,
-    projectId: "1",
   });
 });
 
@@ -226,10 +205,10 @@ app.listen(PORT, () => {
   console.log(`💰 Payment address: ${payTo}`);
   console.log(`🌐 Network: ${network}`);
   console.log(`🔗 Facilitator: ${facilitatorUrl}`);
-  console.log(`🏗️  Revnet Integration: Enabled (Project ID: 1)`);
+  console.log(`🏗️  Revnet Integration: Enabled (handled by facilitator)`);
   console.log("\n📋 Available endpoints:");
-  console.log("  GET  /weather           - $0.001 → Revnet Project 1");
-  console.log("  GET  /premium/*         - 1 USDC → Revnet Project 1");
-  console.log("  POST /api/data          - $0.005 → Revnet Project 1");
+  console.log("  GET  /weather           - $0.001 → Revnet via facilitator");
+  console.log("  GET  /premium/*         - 1 USDC → Revnet via facilitator");
+  console.log("  POST /api/data          - $0.005 → Revnet via facilitator");
   console.log("  GET  /health            - Free");
 });
