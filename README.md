@@ -49,6 +49,8 @@ Facilitator Escrow → [approve + pay] → Revnet Project 127
 
 ## 🚀 **Quick Start**
 
+### **Development Setup**
+
 1. **Install dependencies:**
 
    ```bash
@@ -73,6 +75,20 @@ Facilitator Escrow → [approve + pay] → Revnet Project 127
    - Click any provider endpoint button
    - Follow the x402 payment flow
    - Watch facilitator logs for Revnet integration
+
+### **Production Deployment**
+
+1. **Set up production environment:**
+
+   ```bash
+   cp env.production.example .env
+   # Update .env with your production URLs and private key
+   ```
+
+2. **Deploy services:**
+   - See [DEPLOYMENT.md](./DEPLOYMENT.md) for detailed deployment instructions
+   - Supports Vercel, Railway, Docker, and other platforms
+   - All URLs and addresses are configurable via environment variables
 
 ## 📋 **Service Architecture**
 
@@ -155,9 +171,9 @@ async function settle(signer, paymentPayload, paymentRequirements) {
 
 ### **Revnet Parameters**
 
-- **Project ID**: `127` (hardcoded)
+- **Project ID**: `127` (hardcoded usdc project)
 - **Beneficiary**: Buyer's EOA (dynamic)
-- **Memo**: `"x402-exact-{resource}"` (sanitized resource URL for tracking)
+- **Memo**: `"x402-exact-{resource}"` (use this for custom verification and tracking)
 - **Min Returned Tokens**: `0`
 - **Metadata**: `0x`
 
@@ -182,7 +198,8 @@ This example is built on top of the [x402 protocol](https://github.com/coinbase/
 
 - [x402 Protocol Repository](https://github.com/coinbase/x402)
 - [Juicebox Protocol](https://juicebox.money)
-- [Revnet Documentation](https://revnet.juicebox.money)
+- [Revnet Documentation](https://docs.juicebox.money)
+- [Revnet App](https://revnet.app)
 - [EIP-3009 Standard](https://eips.ethereum.org/EIPS/eip-3009)
 
 ## 📄 **License**

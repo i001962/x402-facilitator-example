@@ -7,7 +7,11 @@ config();
 
 const facilitatorUrl = process.env.FACILITATOR_URL as Resource;
 const payTo = process.env.ADDRESS as `0x${string}` | SolanaAddress;
-const network = (process.env.NETWORK || "base-sepolia") as Network;
+const network = (process.env.NETWORK || "base") as Network;
+const revnetProjectId = process.env.REVNET_PROJECT_ID || "127";
+const usdcContractAddress =
+  process.env.USDC_CONTRACT_ADDRESS || "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+const webClientUrl = process.env.WEB_CLIENT_URL || "http://localhost:8000";
 
 if (!facilitatorUrl || !payTo) {
   console.error("Missing required environment variables: FACILITATOR_URL, ADDRESS");
@@ -19,7 +23,7 @@ const app = express();
 // Enable CORS for web client access
 app.use(
   cors({
-    origin: ["http://localhost:8000", "http://127.0.0.1:8000"],
+    origin: [webClientUrl, "http://127.0.0.1:8000"],
     credentials: true,
   }),
 );
@@ -34,10 +38,7 @@ app.use(
         price: {
           amount: "1000", // 0.001 USDC (6 decimals)
           asset: {
-            address:
-              network === "base"
-                ? "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" // USDC on Base Mainnet
-                : "0x036CbD53842c5426634e7929541eC2318f3dCF7e", // USDC on Base Sepolia
+            address: usdcContractAddress, // USDC contract address from environment
             decimals: 6,
             eip712: {
               name: "USD Coin",
@@ -55,10 +56,7 @@ app.use(
         price: {
           amount: "1000000", // 1 USDC (6 decimals)
           asset: {
-            address:
-              network === "base"
-                ? "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" // USDC on Base Mainnet
-                : "0x036CbD53842c5426634e7929541eC2318f3dCF7e", // USDC on Base Sepolia
+            address: usdcContractAddress, // USDC contract address from environment
             decimals: 6,
             eip712: {
               name: "USD Coin",
@@ -76,10 +74,7 @@ app.use(
         price: {
           amount: "5000", // 0.005 USDC (6 decimals)
           asset: {
-            address:
-              network === "base"
-                ? "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913" // USDC on Base Mainnet
-                : "0x036CbD53842c5426634e7929541eC2318f3dCF7e", // USDC on Base Sepolia
+            address: usdcContractAddress, // USDC contract address from environment
             decimals: 6,
             eip712: {
               name: "USD Coin",

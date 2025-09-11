@@ -76,7 +76,14 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 start_service "Facilitator Server" "$SCRIPT_DIR" 3000 "npm run dev"
 
 # Start Provider Server (port 3001)
-start_service "Provider Server" "$SCRIPT_DIR/examples/servers/express-basic" 3001 "FACILITATOR_URL=http://localhost:3000 ADDRESS=0xAbEa4e7a139FAdBDb2B76179C24f0ff76753C800 NETWORK=base npm run dev"
+FACILITATOR_URL=${FACILITATOR_URL:-"http://localhost:3000"}
+ADDRESS=${ADDRESS:-"0xAbEa4e7a139FAdBDb2B76179C24f0ff76753C800"}
+NETWORK=${NETWORK:-"base"}
+REVNET_PROJECT_ID=${REVNET_PROJECT_ID:-"127"}
+USDC_CONTRACT_ADDRESS=${USDC_CONTRACT_ADDRESS:-"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"}
+WEB_CLIENT_URL=${WEB_CLIENT_URL:-"http://localhost:8000"}
+
+start_service "Provider Server" "$SCRIPT_DIR/examples/servers/express-basic" 3001 "FACILITATOR_URL=$FACILITATOR_URL ADDRESS=$ADDRESS NETWORK=$NETWORK REVNET_PROJECT_ID=$REVNET_PROJECT_ID USDC_CONTRACT_ADDRESS=$USDC_CONTRACT_ADDRESS WEB_CLIENT_URL=$WEB_CLIENT_URL npm run dev"
 
 # Start Web Client (port 8000)
 echo ""
@@ -101,17 +108,17 @@ echo "🎉 All services started!"
 echo "========================"
 echo ""
 echo "📋 Service URLs:"
-echo "  🔗 Facilitator:  http://localhost:3000"
+echo "  🔗 Facilitator:  $FACILITATOR_URL"
 echo "  🔗 Provider:     http://localhost:3001"
-echo "  🔗 Web Client:   http://localhost:8000"
+echo "  🔗 Web Client:   $WEB_CLIENT_URL"
 echo ""
 echo "🧪 Test URLs:"
-echo "  🏥 Health Check: http://localhost:3000/health"
+echo "  🏥 Health Check: $FACILITATOR_URL/health"
 echo "  🏥 Provider Health: http://localhost:3001/health"
 echo "  💰 Weather API: http://localhost:3001/weather"
 echo ""
 echo "📱 To test the complete flow:"
-echo "  1. Open http://localhost:8000 in your browser"
+echo "  1. Open $WEB_CLIENT_URL in your browser"
 echo "  2. Connect your MetaMask wallet"
 echo "  3. Test the free health endpoint"
 echo "  4. Test the paid endpoints"

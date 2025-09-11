@@ -34,6 +34,13 @@ const __dirname = path.dirname(__filename);
 config();
 
 const EVM_PRIVATE_KEY = process.env.EVM_PRIVATE_KEY || "";
+const BASE_URL = process.env.BASE_URL || `http://localhost:${process.env.PORT || 3000}`;
+const REVNET_PROJECT_ID = process.env.REVNET_PROJECT_ID || "127";
+const JB_MULTI_TERMINAL_ADDRESS =
+  process.env.JB_MULTI_TERMINAL_ADDRESS || "0xdb9644369c79c3633cde70d2df50d827d7dc7dbc";
+const USDC_CONTRACT_ADDRESS =
+  process.env.USDC_CONTRACT_ADDRESS || "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913";
+const ESCROW_ADDRESS = process.env.ESCROW_ADDRESS || "0xAbEa4e7a139FAdBDb2B76179C24f0ff76753C800";
 
 if (!EVM_PRIVATE_KEY) {
   console.error("Missing required environment variable: EVM_PRIVATE_KEY");
@@ -53,9 +60,9 @@ async function settle(
 
   console.log("✅ Settlement to escrow completed:", settlementResult);
 
-  // Use hardcoded Revnet configuration (provider-facilitator agreement)
+  // Use configurable Revnet configuration (provider-facilitator agreement)
   const revnetConfig = {
-    projectId: "127",
+    projectId: REVNET_PROJECT_ID,
     beneficiary: (paymentPayload.payload as any).authorization.from, // Use buyer's EOA
     memo: `x402-${paymentRequirements.scheme}-${paymentRequirements.resource.replace(/[^a-zA-Z0-9]/g, "_")}`,
     minReturnedTokens: "0",
@@ -115,7 +122,7 @@ async function settle(
             },
           ],
           functionName: "allowance",
-          args: [account.address, JB_MULTI_TERMINAL_ADDRESS],
+          args: [account.address, JB_MULTI_TERMINAL_ADDRESS_CONST],
         });
 
         console.log("🔍 Current allowance:", currentAllowance.toString());
@@ -153,7 +160,7 @@ async function settle(
             ],
             functionName: "approve",
             args: [
-              JB_MULTI_TERMINAL_ADDRESS, // spender
+              JB_MULTI_TERMINAL_ADDRESS_CONST, // spender
               unlimitedAllowance, // unlimited allowance
             ],
             gasPrice: increasedGasPrice, // Use increased gas price
@@ -191,7 +198,7 @@ async function settle(
         console.log("🔢 Current nonce for pay:", payNonce);
 
         const revnetTxHash = await walletClient.writeContract({
-          address: JB_MULTI_TERMINAL_ADDRESS,
+          address: JB_MULTI_TERMINAL_ADDRESS_CONST,
           abi: JB_MULTI_TERMINAL_ABI,
           functionName: "pay",
           args: [
@@ -229,7 +236,7 @@ async function settle(
           amount: paymentRequirements.maxAmountRequired,
           token: paymentRequirements.asset,
           escrowAccount: paymentRequirements.payTo,
-          jbMultiTerminal: JB_MULTI_TERMINAL_ADDRESS,
+          jbMultiTerminal: JB_MULTI_TERMINAL_ADDRESS_CONST,
         };
       })();
 
@@ -310,7 +317,7 @@ const JB_MULTI_TERMINAL_ABI = [
   },
 ] as const;
 
-const JB_MULTI_TERMINAL_ADDRESS = "0xdb9644369c79c3633cde70d2df50d827d7dc7dbc" as const;
+const JB_MULTI_TERMINAL_ADDRESS_CONST = JB_MULTI_TERMINAL_ADDRESS as `0x${string}`;
 
 // Custom function to create a connected client with Alchemy RPC
 /**
@@ -513,9 +520,9 @@ app.get("/api/data", async (req: Request, res: Response) => {
           resource: "https://example.com/api/data",
           description: "Test API data access",
           mimeType: "application/json",
-          payTo: "0xAbEa4e7a139FAdBDb2B76179C24f0ff76753C800", // Facilitator address
+          payTo: ESCROW_ADDRESS, // Facilitator address
           maxTimeoutSeconds: 3600,
-          asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913", // USDC on Base Mainnet
+          asset: USDC_CONTRACT_ADDRESS, // USDC on Base Mainnet
         },
       ],
     });
@@ -533,9 +540,9 @@ app.get("/api/data", async (req: Request, res: Response) => {
       resource: "https://example.com/api/data",
       description: "Test API data access",
       mimeType: "application/json",
-      payTo: "0xAbEa4e7a139FAdBDb2B76179C24f0ff76753C800",
+      payTo: ESCROW_ADDRESS,
       maxTimeoutSeconds: 3600,
-      asset: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
+      asset: USDC_CONTRACT_ADDRESS,
     };
 
     // Debug: log the payload being sent for verification
@@ -543,7 +550,7 @@ app.get("/api/data", async (req: Request, res: Response) => {
     console.log("🔍 Payment requirements:", JSON.stringify(paymentRequirements, null, 2));
 
     // Verify payment with facilitator
-    const verifyResponse = await fetch(`http://localhost:${port}/verify`, {
+    const verifyResponse = await fetch(`${BASE_URL}/verify`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -564,7 +571,7 @@ app.get("/api/data", async (req: Request, res: Response) => {
     }
 
     // Payment verified! Now settle it to actually move funds
-    const settleResponse = await fetch(`http://localhost:${port}/settle`, {
+    const settleResponse = await fetch(`${BASE_URL}/settle`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -602,7 +609,7 @@ app.get("/api/data", async (req: Request, res: Response) => {
 
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log(`x402 Facilitator Example server listening at http://localhost:${port}`);
-  console.log(`Health check: http://localhost:${port}/health`);
-  console.log(`Supported networks: http://localhost:${port}/supported`);
+  console.log(`x402 Facilitator Example server listening at ${BASE_URL}`);
+  console.log(`Health check: ${BASE_URL}/health`);
+  console.log(`Supported networks: ${BASE_URL}/supported`);
 });
