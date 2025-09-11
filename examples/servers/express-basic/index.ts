@@ -39,10 +39,6 @@ app.use(
           asset: {
             address: usdcContractAddress, // USDC contract address from environment
             decimals: 6,
-            eip712: {
-              name: "USD Coin",
-              version: "2",
-            },
           },
         },
         network,
@@ -57,10 +53,6 @@ app.use(
           asset: {
             address: usdcContractAddress, // USDC contract address from environment
             decimals: 6,
-            eip712: {
-              name: "USD Coin",
-              version: "2",
-            },
           },
         },
         network,
@@ -75,10 +67,6 @@ app.use(
           asset: {
             address: usdcContractAddress, // USDC contract address from environment
             decimals: 6,
-            eip712: {
-              name: "USD Coin",
-              version: "2",
-            },
           },
         },
         network,
@@ -113,7 +101,6 @@ app.get("/weather", (req, res) => {
   // Get the actual payer from the payment header
   const payer = getPayerFromPaymentHeader(req);
 
-
   res.json({
     location: "San Francisco",
     temperature: 72,
@@ -127,7 +114,6 @@ app.get("/weather", (req, res) => {
 app.get("/premium/content", (req, res) => {
   // Get the actual payer from the payment header
   const payer = getPayerFromPaymentHeader(req);
-
 
   res.json({
     content: "This is premium content that requires payment",
