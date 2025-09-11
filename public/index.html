@@ -376,19 +376,20 @@
         <div class="grid-2">
           <div class="form-group">
             <label class="form-label" for="providerUrl">Provider Server URL</label>
-            <input
-              type="text"
-              id="providerUrl"
-              class="form-input"
-              value="http://cast-caps.vercel.app"
-              placeholder="http://cast-caps.vercel.app"
-            />
+            <select id="providerUrl" class="form-input">
+              <option value="http://localhost:3001">Local Development (localhost:3001)</option>
+              <option value="http://cast-caps.vercel.app/capsule" selected>
+                Cast Caps (Production)
+              </option>
+            </select>
           </div>
 
           <div class="form-group">
             <label class="form-label" for="testEndpoint">Test Endpoint</label>
             <select id="testEndpoint" class="form-select">
-              <option value="/weather">GET /weather - $0.001</option>
+              <option value="/0x44751f458256b81e96f7024256d0705e77fd8f3a1ada530fa01abf54a569d12f">
+                GET /[addr]
+              </option>
               <option value="/premium/data">GET /premium/data - 1 USDC</option>
               <option value="/api/data">POST /api/data - $0.005</option>
               <option value="/health">GET /health - Free</option>
